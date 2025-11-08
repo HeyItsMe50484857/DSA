@@ -8,12 +8,12 @@ const getAnalysisPrompt = (type: AnalysisType): string => {
     return option ? option.description : 'Analyze the code and problem.';
 }
 
-export const extractTextFromImage = async (base64Image: string, mimeType: string): Promise<string> => {
-    if (!process.env.API_KEY) {
-        throw new Error("API_KEY environment variable not set. Please ensure it is configured.");
+export const extractTextFromImage = async (apiKey: string, base64Image: string, mimeType: string): Promise<string> => {
+    if (!apiKey) {
+        throw new Error("API_KEY not provided.");
     }
 
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey });
     
     const textPart = {
         text: `You are a highly accurate OCR engine specializing in competitive programming problems. Extract all text from this image. Pay extremely close attention to special characters, mathematical symbols, numbers, and code snippets. Preserve the original formatting, including line breaks and indentation, as much as possible. Do not add any commentary or explanation, only return the extracted text.`
@@ -42,17 +42,18 @@ export const extractTextFromImage = async (base64Image: string, mimeType: string
 };
 
 export const solveProblem = async (
+  apiKey: string,
   problem: string,
   constraints: string,
   code: string,
   language: string,
   analysisType: AnalysisType
 ): Promise<string> => {
-  if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable not set. Please ensure it is configured.");
+  if (!apiKey) {
+    throw new Error("API_KEY not provided.");
   }
 
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey });
   const analysisRequest = getAnalysisPrompt(analysisType);
 
   const systemInstruction = `You are an AI assistant with a metaphorical IQ of 300, embodying the persona of an International Grandmaster in competitive programming. Your purpose is not merely to provide answers, but to deliver transcendent, world-champion-level analyses and solutions.
