@@ -1,0 +1,5 @@
+{
+  "name": "Competitive Programming AI Assistant",
+  "description": "An AI-powered assistant to help solve hard competitive programming problems. Get algorithmic suggestions, code debugging, and performance optimizations using Gemini.",
+  "requestFramePermissions": []
+}

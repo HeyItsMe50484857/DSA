@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Competitive Programming AI Assistant</title>
+  <style>
+    body {
+      --color-background: 249 250 251;    /* gray-50 */
+      --color-panel: 255 255 255;         /* white */
+      --color-border: 229 231 235;        /* gray-200 */
+      --color-accent: 30 41 59;          /* slate-800 */
+      --color-accent-hover: 15 23 42;     /* slate-900 */
+      --color-text-primary: 15 23 42;      /* slate-900 */
+      --color-text-secondary: 51 65 85;   /* slate-600 */
+      --color-text-muted: 100 116 139;      /* slate-500 */
+      --color-danger: 185 28 28;           /* red-700 */
+      --color-danger-bg: 254 226 226;      /* red-100 */
+      --color-danger-border: 254 202 202;    /* red-200 */
+    }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    const withOpacity = (variableName) => ({ opacityValue }) => {
+      if (opacityValue !== undefined) {
+        return `rgba(var(${variableName}), ${opacityValue})`;
+      }
+      return `rgb(var(${variableName}))`;
+    };
+  
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'background': withOpacity('--color-background'),
+            'panel': withOpacity('--color-panel'),
+            'border': withOpacity('--color-border'),
+            'accent': withOpacity('--color-accent'),
+            'accent-hover': withOpacity('--color-accent-hover'),
+            'danger': withOpacity('--color-danger'),
+            'danger-bg': withOpacity('--color-danger-bg'),
+            'danger-border': withOpacity('--color-danger-border'),
+          },
+          textColor: {
+            'primary': withOpacity('--color-text-primary'),
+            'secondary': withOpacity('--color-text-secondary'),
+            'muted': withOpacity('--color-text-muted'),
+            'accent': withOpacity('--color-accent'),
+            'danger': withOpacity('--color-danger'),
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          animation: {
+            'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          }
+        },
+      },
+    }
+  </script>
+  <link rel="preconnect" href="https://rsms.me/">
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0"
+  }
+}
+</script>
+</head>
+<body class="bg-background text-secondary font-sans">
+  <div id="root"></div>
+</body>
+</html>
