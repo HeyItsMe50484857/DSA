@@ -1,9 +1,21 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BrainCircuitIcon, ClipboardIcon, CheckIcon } from './icons';
+
+declare global {
+    interface Window {
+        hljs: any;
+    }
+}
 
 const CodeBlock: React.FC<{ language: string; code: string }> = ({ language, code }) => {
     const [copied, setCopied] = useState(false);
+    const codeRef = useRef<HTMLElement>(null);
+
+    useEffect(() => {
+        if (codeRef.current && window.hljs) {
+            window.hljs.highlightElement(codeRef.current);
+        }
+    }, [code]);
 
     const handleCopy = () => {
         if (!code) return;
@@ -16,13 +28,13 @@ const CodeBlock: React.FC<{ language: string; code: string }> = ({ language, cod
         <div className="relative group">
             <button
                 onClick={handleCopy}
-                className="absolute top-2 right-2 bg-border/50 p-2 rounded-md hover:bg-border transition-opacity opacity-0 group-hover:opacity-100 text-primary focus:opacity-100"
+                className="absolute top-2 right-2 bg-border p-2 rounded-md hover:brightness-95 transition-all duration-200 opacity-0 group-hover:opacity-100 text-accent-hover focus:opacity-100"
                 aria-label="Copy code to clipboard"
             >
                 {copied ? <CheckIcon className="w-5 h-5 text-accent" /> : <ClipboardIcon className="w-5 h-5" />}
             </button>
             <pre className="bg-background p-4 rounded-md overflow-x-auto text-primary">
-                <code className={`language-${language} font-mono`}>{code}</code>
+                <code ref={codeRef} className={`language-${language.toLowerCase()} font-mono`}>{code}</code>
             </pre>
         </div>
     );
@@ -41,7 +53,7 @@ const SimpleMarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
                     const codeBlock = part.replace(/```/g, '');
                     const lang = codeBlock.split('\n')[0].trim();
                     const code = codeBlock.substring(lang.length).trim();
-                    return <CodeBlock key={index} language={lang} code={code} />;
+                    return <CodeBlock key={index} language={lang || 'plaintext'} code={code} />;
                 }
                 if (part.startsWith('## ')) {
                     return <h2 key={index} className="text-xl font-bold mt-4 mb-2 text-accent">{part.substring(3)}</h2>;

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { AnalysisType } from '../types';
 import { LANGUAGES, ANALYSIS_OPTIONS } from '../constants';
@@ -119,28 +120,31 @@ export const InputSection: React.FC<InputSectionProps> = ({
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
                 >
-                    {LANGUAGES.map(lang => <option key={lang} value={lang}>{lang}</option>)}
+                    {LANGUAGES.map(lang => <option key={lang} value={lang} className="bg-white text-black">{lang}</option>)}
                 </select>
             </div>
             
             <div>
                 <h3 className="text-sm font-medium text-accent mb-3">Analysis Type</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {ANALYSIS_OPTIONS.map(option => (
-                        <button
-                            key={option.value}
-                            type="button"
-                            onClick={() => setAnalysisType(option.value)}
-                            className={`p-3 text-left rounded-md border text-sm transition-all duration-200 ${
-                                analysisType === option.value 
-                                ? 'bg-accent/10 border-accent/30 ring-2 ring-accent' 
-                                : 'bg-panel border-border hover:bg-background'
-                            }`}
-                        >
-                            <p className="font-semibold text-primary">{option.label}</p>
-                            <p className="text-xs text-muted mt-1">{option.description}</p>
-                        </button>
-                    ))}
+                    {ANALYSIS_OPTIONS.map(option => {
+                        const isSelected = analysisType === option.value;
+                        return (
+                            <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => setAnalysisType(option.value)}
+                                className={`p-3 text-left rounded-md border text-sm transition-all duration-200 ${
+                                    isSelected 
+                                    ? 'bg-accent border-accent' 
+                                    : 'bg-panel border-border hover:bg-accent/5 hover:border-accent/30'
+                                }`}
+                            >
+                                <p className={`font-semibold ${isSelected ? 'text-white' : 'text-primary'}`}>{option.label}</p>
+                                <p className={`text-xs mt-1 ${isSelected ? 'text-slate-300' : 'text-muted'}`}>{option.description}</p>
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 

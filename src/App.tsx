@@ -134,7 +134,7 @@ const App: React.FC = () => {
         <header className="mb-8 md:mb-12">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <BrainCircuitIcon className="w-10 h-10 text-accent" />
+              <BrainCircuitIcon className="w-10 h-10 text-[#fbbf24]" />
               <h1 className="text-3xl md:text-4xl font-bold text-accent tracking-tight">
                 AI Grandmaster
               </h1>
