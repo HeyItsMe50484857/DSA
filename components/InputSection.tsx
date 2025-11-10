@@ -42,7 +42,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
     };
 
     return (
-        <div className="flex flex-col gap-6 p-6 bg-panel border border-border rounded-lg shadow-sm">
+        <div className="h-full flex flex-col gap-6 p-6 bg-panel border border-border rounded-lg shadow-sm overflow-y-auto">
             <div>
                  <div className="flex justify-between items-center mb-2">
                     <label htmlFor="problem" className="block text-sm font-medium text-accent">Problem Description</label>

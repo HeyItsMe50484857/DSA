@@ -1,7 +1,7 @@
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { AnalysisType } from './types';
-import { solveProblem, extractTextFromImage } from './services/geminiService';
+import React, { useState, useCallback } from 'react';
+import { AnalysisType, FeedbackStatus } from './types';
+import { solveProblem, extractTextFromImage, learnFromMistake } from './services/geminiService';
 import { InputSection } from './components/InputSection';
 import { OutputSection } from './components/OutputSection';
 import { BrainCircuitIcon } from './components/icons';
@@ -75,6 +75,18 @@ const App: React.FC = () => {
   const [image, setImage] = useState<{ file: File, dataUrl: string } | null>(null);
   const [isExtractingText, setIsExtractingText] = useState<boolean>(false);
 
+  // State for feedback loop
+  const [feedbackStatus, setFeedbackStatus] = useState<FeedbackStatus>('pending');
+  const [correctCode, setCorrectCode] = useState<string>('');
+  const [isLearning, setIsLearning] = useState<boolean>(false);
+  const [learningAnalysis, setLearningAnalysis] = useState<string>('');
+
+  const resetFeedbackState = () => {
+    setFeedbackStatus('pending');
+    setCorrectCode('');
+    setLearningAnalysis('');
+  };
+
   const handleImageExtract = useCallback(async () => {
     if (!image || !apiKey) return;
 
@@ -111,6 +123,7 @@ const App: React.FC = () => {
     setIsLoading(true);
     setError(null);
     setOutput('');
+    resetFeedbackState();
 
     try {
       const result = await solveProblem(apiKey, problem, constraints, code, language, analysisType);
@@ -122,6 +135,29 @@ const App: React.FC = () => {
       setIsLoading(false);
     }
   }, [apiKey, problem, constraints, code, language, analysisType]);
+
+  const handleFeedbackSubmit = useCallback(async () => {
+    if (!apiKey || !output || !correctCode.trim()) return;
+    
+    setIsLearning(true);
+    setError(null);
+    setLearningAnalysis('');
+    
+    try {
+      // Extract the incorrect code from the original output
+      const incorrectCodeMatch = output.match(/```[\s\S]*?\n([\s\S]*?)```/);
+      const incorrectCode = incorrectCodeMatch ? incorrectCodeMatch[1] : '';
+
+      const analysis = await learnFromMistake(apiKey, problem, constraints, language, incorrectCode, correctCode);
+      setLearningAnalysis(analysis);
+      setFeedbackStatus('complete');
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'An unexpected error occurred during the learning process.';
+      setError(errorMessage);
+    } finally {
+      setIsLearning(false);
+    }
+  }, [apiKey, problem, constraints, language, output, correctCode]);
   
   // If no API key, render the setup screen
   if (!apiKey) {
@@ -129,9 +165,9 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background text-secondary font-sans">
-      <main className="p-4 md:p-8 max-w-7xl mx-auto">
-        <header className="mb-8 md:mb-12">
+    <div className="h-screen bg-background text-secondary font-sans">
+      <main className="h-full flex flex-col">
+        <header className="px-4 md:px-8 pt-4 md:pt-8">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <BrainCircuitIcon className="w-10 h-10 text-[#fbbf24]" />
@@ -141,34 +177,45 @@ const App: React.FC = () => {
             </div>
           </div>
            <p className="mt-2 text-muted max-w-2xl">
-            Input a problem, add your code, and let a 300 IQ AI guide you to the optimal solution.
+            Input a problem, add your code, and let a 400 IQ AI guide you to the optimal solution.
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-8">
-          <InputSection 
-            problem={problem}
-            setProblem={setProblem}
-            constraints={constraints}
-            setConstraints={setConstraints}
-            code={code}
-            setCode={setCode}
-            language={language}
-            setLanguage={setLanguage}
-            analysisType={analysisType}
-            setAnalysisType={setAnalysisType}
-            handleSubmit={handleSubmit}
-            isLoading={isLoading}
-            image={image}
-            setImage={setImage}
-            handleImageExtract={handleImageExtract}
-            isExtractingText={isExtractingText}
-          />
-          <OutputSection
-            output={output}
-            isLoading={isLoading}
-            error={error}
-          />
+        <div className="flex-1 flex flex-row gap-8 p-4 md:p-8 overflow-hidden">
+          <div className="w-full max-w-[500px] shrink-0">
+            <InputSection 
+              problem={problem}
+              setProblem={setProblem}
+              constraints={constraints}
+              setConstraints={setConstraints}
+              code={code}
+              setCode={setCode}
+              language={language}
+              setLanguage={setLanguage}
+              analysisType={analysisType}
+              setAnalysisType={setAnalysisType}
+              handleSubmit={handleSubmit}
+              isLoading={isLoading}
+              image={image}
+              setImage={setImage}
+              handleImageExtract={handleImageExtract}
+              isExtractingText={isExtractingText}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <OutputSection
+              output={output}
+              isLoading={isLoading}
+              error={error}
+              feedbackStatus={feedbackStatus}
+              setFeedbackStatus={setFeedbackStatus}
+              correctCode={correctCode}
+              setCorrectCode={setCorrectCode}
+              onFeedbackSubmit={handleFeedbackSubmit}
+              isLearning={isLearning}
+              learningAnalysis={learningAnalysis}
+            />
+          </div>
         </div>
       </main>
     </div>

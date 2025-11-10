@@ -5,3 +5,5 @@ export enum AnalysisType {
   SUGGEST = 'suggest',
   EXPLAIN = 'explain',
 }
+
+export type FeedbackStatus = 'pending' | 'correct' | 'incorrect' | 'complete';

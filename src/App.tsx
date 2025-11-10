@@ -1,7 +1,7 @@
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { AnalysisType } from './types';
-import { solveProblem, extractTextFromImage } from './services/geminiService';
+import React, { useState, useCallback } from 'react';
+import { AnalysisType, FeedbackStatus } from './types';
+import { solveProblem, extractTextFromImage, learnFromMistake } from './services/geminiService';
 import { InputSection } from './components/InputSection';
 import { OutputSection } from './components/OutputSection';
 import { BrainCircuitIcon } from './components/icons';
@@ -75,6 +75,18 @@ const App: React.FC = () => {
   const [image, setImage] = useState<{ file: File, dataUrl: string } | null>(null);
   const [isExtractingText, setIsExtractingText] = useState<boolean>(false);
 
+  // State for feedback loop
+  const [feedbackStatus, setFeedbackStatus] = useState<FeedbackStatus>('pending');
+  const [correctCode, setCorrectCode] = useState<string>('');
+  const [isLearning, setIsLearning] = useState<boolean>(false);
+  const [learningAnalysis, setLearningAnalysis] = useState<string>('');
+
+  const resetFeedbackState = () => {
+    setFeedbackStatus('pending');
+    setCorrectCode('');
+    setLearningAnalysis('');
+  };
+
   const handleImageExtract = useCallback(async () => {
     if (!image || !apiKey) return;
 
@@ -111,6 +123,7 @@ const App: React.FC = () => {
     setIsLoading(true);
     setError(null);
     setOutput('');
+    resetFeedbackState();
 
     try {
       const result = await solveProblem(apiKey, problem, constraints, code, language, analysisType);
@@ -122,6 +135,29 @@ const App: React.FC = () => {
       setIsLoading(false);
     }
   }, [apiKey, problem, constraints, code, language, analysisType]);
+
+  const handleFeedbackSubmit = useCallback(async () => {
+    if (!apiKey || !output || !correctCode.trim()) return;
+    
+    setIsLearning(true);
+    setError(null);
+    setLearningAnalysis('');
+    
+    try {
+      // Extract the incorrect code from the original output
+      const incorrectCodeMatch = output.match(/```[\s\S]*?\n([\s\S]*?)```/);
+      const incorrectCode = incorrectCodeMatch ? incorrectCodeMatch[1] : '';
+
+      const analysis = await learnFromMistake(apiKey, problem, constraints, language, incorrectCode, correctCode);
+      setLearningAnalysis(analysis);
+      setFeedbackStatus('complete');
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'An unexpected error occurred during the learning process.';
+      setError(errorMessage);
+    } finally {
+      setIsLearning(false);
+    }
+  }, [apiKey, problem, constraints, language, output, correctCode]);
   
   // If no API key, render the setup screen
   if (!apiKey) {
@@ -168,6 +204,13 @@ const App: React.FC = () => {
             output={output}
             isLoading={isLoading}
             error={error}
+            feedbackStatus={feedbackStatus}
+            setFeedbackStatus={setFeedbackStatus}
+            correctCode={correctCode}
+            setCorrectCode={setCorrectCode}
+            onFeedbackSubmit={handleFeedbackSubmit}
+            isLearning={isLearning}
+            learningAnalysis={learningAnalysis}
           />
         </div>
       </main>

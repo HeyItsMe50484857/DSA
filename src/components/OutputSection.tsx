@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { BrainCircuitIcon, ClipboardIcon, CheckIcon } from './icons';
+import { BrainCircuitIcon, ClipboardIcon, CheckIcon, ThumbsUpIcon, ThumbsDownIcon } from './icons';
+import { FeedbackStatus } from '../types';
 
 declare global {
     interface Window {
@@ -120,14 +122,114 @@ const InitialState: React.FC = () => (
     </div>
 );
 
+interface FeedbackSectionProps {
+    status: FeedbackStatus;
+    setStatus: (status: FeedbackStatus) => void;
+    correctCode: string;
+    setCorrectCode: (code: string) => void;
+    onSubmit: () => void;
+    isLearning: boolean;
+    learningAnalysis: string;
+}
+
+const FeedbackSection: React.FC<FeedbackSectionProps> = ({
+    status, setStatus, correctCode, setCorrectCode, onSubmit, isLearning, learningAnalysis
+}) => {
+    if (status === 'complete') {
+        if (isLearning) {
+            return (
+                <div className="mt-6 p-4 border-t border-border flex items-center justify-center text-muted">
+                    <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <span>Analyzing mistake...</span>
+                </div>
+            )
+        }
+        return (
+            <div className="mt-6 pt-4 border-t border-border">
+                 <h3 className="text-lg font-semibold text-accent mb-4">Corrective Analysis</h3>
+                 <SimpleMarkdownRenderer content={learningAnalysis} />
+            </div>
+        )
+    }
+
+    if (status === 'correct') {
+        return (
+            <div className="mt-6 p-4 border-t border-border text-center text-muted">
+                <p>Great! Thanks for the feedback.</p>
+            </div>
+        );
+    }
+    
+    if (status === 'incorrect') {
+        return (
+            <div className="mt-6 pt-4 border-t border-border">
+                <label htmlFor="correct-code" className="block text-sm font-medium text-accent mb-2">Provide the Accepted Code</label>
+                <textarea
+                    id="correct-code"
+                    rows={8}
+                    className="w-full bg-background border border-border rounded-md p-3 font-mono text-sm text-primary placeholder-muted focus:ring-2 focus:ring-accent focus:border-accent transition-colors duration-200"
+                    placeholder="Paste the code that was accepted here."
+                    value={correctCode}
+                    onChange={(e) => setCorrectCode(e.target.value)}
+                />
+                <button
+                    onClick={onSubmit}
+                    disabled={isLearning || !correctCode.trim()}
+                    className="flex items-center justify-center gap-2 w-full mt-2 bg-accent text-white font-bold py-2 px-4 rounded-md hover:bg-accent-hover transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {isLearning ? (
+                        <>
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Learning...</span>
+                        </>
+                    ) : (
+                        <span>Submit for Analysis</span>
+                    )}
+                </button>
+            </div>
+        )
+    }
+
+    return (
+        <div className="mt-6 pt-4 border-t border-border text-center">
+            <p className="text-sm font-medium text-muted mb-3">Was this solution correct?</p>
+            <div className="flex justify-center gap-4">
+                <button 
+                    onClick={() => setStatus('correct')}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-green-700 bg-green-100 rounded-md hover:bg-green-200 transition-colors"
+                >
+                    <ThumbsUpIcon className="w-4 h-4" />
+                    Yes
+                </button>
+                <button 
+                    onClick={() => setStatus('incorrect')}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-red-700 bg-red-100 rounded-md hover:bg-red-200 transition-colors"
+                >
+                    <ThumbsDownIcon className="w-4 h-4" />
+                    No
+                </button>
+            </div>
+        </div>
+    );
+}
+
 
 interface OutputSectionProps {
     output: string;
     isLoading: boolean;
     error: string | null;
+    feedbackStatus: FeedbackStatus;
+    setFeedbackStatus: (status: FeedbackStatus) => void;
+    correctCode: string;
+    setCorrectCode: (code: string) => void;
+    onFeedbackSubmit: () => void;
+    isLearning: boolean;
+    learningAnalysis: string;
 }
 
-export const OutputSection: React.FC<OutputSectionProps> = ({ output, isLoading, error }) => {
+export const OutputSection: React.FC<OutputSectionProps> = (props) => {
+    const { output, isLoading, error, feedbackStatus, setFeedbackStatus, correctCode, setCorrectCode, onFeedbackSubmit, isLearning, learningAnalysis } = props;
+
     const renderContent = () => {
         if (isLoading) return <LoadingState />;
         if (error) return <div className="text-danger p-4 bg-danger-bg rounded-md border border-danger-border">{error}</div>;
@@ -136,8 +238,21 @@ export const OutputSection: React.FC<OutputSectionProps> = ({ output, isLoading,
     };
     
     return (
-        <div className="relative bg-panel border border-border rounded-lg p-6 lg:h-full min-h-[500px] shadow-sm">
-            {renderContent()}
+        <div className="relative bg-panel border border-border rounded-lg p-6 lg:h-full min-h-[500px] shadow-sm flex flex-col">
+            <div className="flex-grow overflow-y-auto">
+                {renderContent()}
+            </div>
+            {!isLoading && !error && output && (
+                <FeedbackSection 
+                    status={feedbackStatus}
+                    setStatus={setFeedbackStatus}
+                    correctCode={correctCode}
+                    setCorrectCode={setCorrectCode}
+                    onSubmit={onFeedbackSubmit}
+                    isLearning={isLearning}
+                    learningAnalysis={learningAnalysis}
+                />
+            )}
         </div>
     );
 };
