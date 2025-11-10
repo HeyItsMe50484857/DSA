@@ -173,7 +173,7 @@ const App: React.FC = () => {
             <div className="flex items-center gap-4">
               <BrainCircuitIcon className="w-10 h-10 text-[#fbbf24]" />
               <h1 className="text-3xl md:text-4xl font-bold text-accent tracking-tight">
-                AI Grandmaster
+                DSA Grandmaster AI
               </h1>
             </div>
           </div>
