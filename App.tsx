@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback } from 'react';
 import { AnalysisType, FeedbackStatus } from './types';
 import { solveProblem, extractTextFromImage, learnFromMistake } from './services/geminiService';
@@ -177,7 +178,7 @@ const App: React.FC = () => {
             </div>
           </div>
            <p className="mt-2 text-muted max-w-2xl">
-            Input a problem, add your code, and let a 400 IQ AI guide you to the optimal solution.
+            Input a problem, add your code, and let a Legendary Grandmaster AI, guide you to the optimal solution.
           </p>
         </header>
 
